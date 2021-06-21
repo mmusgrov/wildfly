@@ -256,4 +256,7 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 40, value = "There is no active transaction at the current context to register synchronization '%s'")
     IllegalStateException noActiveTransactionToRegisterSynchronization(Synchronization sync);
+
+    @Message(id = 41, value = "Transaction discovery error")
+    OperationFailedException transactionDiscoveryError(@Cause Exception e);
 }

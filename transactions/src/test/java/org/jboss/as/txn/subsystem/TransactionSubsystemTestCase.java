@@ -291,7 +291,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
 
-        if (modelVersion == MODEL_VERSION_EAP70) {
+        if (modelVersion == MODEL_VERSION_EAP70) { // TODO: how to test transformers?
             PathAddress subsystemAddress = PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH);
             PathAddress participants = subsystemAddress.append(TransactionExtension.LOG_STORE_PATH).append(TransactionExtension.TRANSACTION_PATH).append(TransactionExtension.PARTICIPANT_PATH);
             //check that we reject log-store=log-store/transactions=*/participants=*:delete

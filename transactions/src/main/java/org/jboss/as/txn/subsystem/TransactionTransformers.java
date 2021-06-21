@@ -88,6 +88,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
                 .setValueConverter(AttributeConverter.DEFAULT_VALUE, OBJECT_STORE_RELATIVE_TO)
                 .end();
 
+        // TODO: transformers to be needed?
         builderEap70.addChildResource(TransactionExtension.LOG_STORE_PATH)
                 .addChildResource(TransactionExtension.TRANSACTION_PATH)
                 .addChildResource(TransactionExtension.PARTICIPANT_PATH)

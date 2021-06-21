@@ -69,6 +69,7 @@
         <module>health</module>
         <module>jwt</module>
         <module>metrics</module>
+        <module>lra</module>
         <module>openapi</module>
         <module>opentracing</module>
         <module>rest-client</module>

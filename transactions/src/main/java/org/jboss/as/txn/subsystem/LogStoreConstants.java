@@ -49,8 +49,6 @@ class LogStoreConstants {
     public static final String TRANSACTIONS = "transactions";
     public static final String PARTICIPANTS = "participants";
 
-
-
     static enum ParticipantStatus {
         PENDING,
         PREPARED,
@@ -61,16 +59,16 @@ class LogStoreConstants {
 
     static final String JMX_ON_ATTRIBUTE = "jmx-name";
     static final String JNDI_ATTRIBUTE = "jndi-name";
+    static final String ID_ATTRIBUTE = "id";
     static final String LOG_STORE_TYPE_ATTRIBUTE = "type";
     static final String EXPOSE_ALL_LOGS_ATTRIBUTE = "expose-all-logs";
-
 
     static final Map<String, String> MODEL_TO_JMX_TXN_NAMES =
             Collections.unmodifiableMap(new HashMap<String, String>() {
                 private static final long serialVersionUID = 1L;
             {
                 put(JMX_ON_ATTRIBUTE, null);
-                put("id", "Id");
+                put(ID_ATTRIBUTE, "Id");
                 put("age-in-seconds", "AgeInSeconds");
                 put("type", "Type");
             }});
@@ -87,8 +85,14 @@ class LogStoreConstants {
                 put("eis-product-version", "EisProductVersion");
             }});
 
-    static final String[] TXN_JMX_NAMES = MODEL_TO_JMX_TXN_NAMES.values().toArray(new String[MODEL_TO_JMX_TXN_NAMES.size()]);
-    static final String[] PARTICIPANT_JMX_NAMES = MODEL_TO_JMX_PARTICIPANT_NAMES.values().toArray(new String[MODEL_TO_JMX_PARTICIPANT_NAMES.size()]);
+
+    static final String ID_JMX_PROPERTY_NAME =
+            LogStoreConstants.MODEL_TO_JMX_TXN_NAMES.get(LogStoreConstants.ID_ATTRIBUTE);
+    static final String JNDI_JXM_PROPERTY_NAME =
+            LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES.get(LogStoreConstants.JNDI_ATTRIBUTE);
+
+    static final String[] TXN_JMX_NAMES = MODEL_TO_JMX_TXN_NAMES.values().toArray(new String[]{});
+    static final String[] PARTICIPANT_JMX_NAMES = MODEL_TO_JMX_PARTICIPANT_NAMES.values().toArray(new String[]{});
 
     static SimpleAttributeDefinition LOG_STORE_TYPE = (new SimpleAttributeDefinitionBuilder(LOG_STORE_TYPE_ATTRIBUTE, ModelType.STRING))
             .setAllowExpression(false)

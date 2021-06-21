@@ -63,5 +63,8 @@
         <!-- For the ContextPropagationAsyncHandler used with the context propagation feature pack -->
         <module name="org.wildfly.reactive.dep.jts" services="import" optional="true"/>
         <module name="java.xml"/>
+
+        <!-- For listing LRA records need to have records on classpath -->
+        <module name="org.jboss.narayana.rts.lra-coordinator" optional="true" />
     </dependencies>
 </module>

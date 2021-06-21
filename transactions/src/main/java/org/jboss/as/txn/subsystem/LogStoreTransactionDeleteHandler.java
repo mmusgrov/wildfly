@@ -40,7 +40,7 @@ import javax.management.ObjectName;
  */
 public class LogStoreTransactionDeleteHandler implements OperationStepHandler {
     // Generic failure reason if we cannot determine a more specific cause
-    static final String LOG_DELETE_FAILURE_MESSAGE = "Unable to remove transaction log";
+    static final String LOG_DELETE_FAILURE_MESSAGE = "Unable to remove object store log record";
 
     private LogStoreResource logStoreResource = null;
 

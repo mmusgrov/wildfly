@@ -28,6 +28,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.txn.service.ObjStoreBrowserService;
 import org.jboss.dmr.ModelNode;
 
 import javax.management.AttributeList;
@@ -57,9 +59,6 @@ import java.util.Set;
 public class LogStoreProbeHandler implements OperationStepHandler {
 
     static final LogStoreProbeHandler INSTANCE = new LogStoreProbeHandler();
-    static final String osMBeanName = "jboss.jta:type=ObjectStore";
-    static final String JNDI_PROPNAME =
-            LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES.get(LogStoreConstants.JNDI_ATTRIBUTE);
 
     private Map<String, String> getMBeanValues(MBeanServerConnection cnx, ObjectName on, String ... attributeNames)
             throws InstanceNotFoundException, IOException, ReflectionException, IntrospectionException {
@@ -75,7 +74,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
 
         AttributeList attributes = cnx.getAttributes(on, attributeNames);
-        Map<String, String> values = new HashMap<String, String>();
+        Map<String, String> values = new HashMap<>();
 
         for (javax.management.Attribute attribute : attributes.asList()) {
             Object value = attribute.getValue();
@@ -95,7 +94,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
     }
 
-    private void addParticipants(final Resource parent, Set<ObjectInstance> participants, MBeanServer mbs)
+    private void addParticipants(final JmxDataResolver resolver, final Resource parent, Set<ObjectInstance> participants, MBeanServer mbs)
             throws IntrospectionException, InstanceNotFoundException, IOException, ReflectionException {
         int i = 1;
 
@@ -103,69 +102,65 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             final Resource resource = new LogStoreResource.LogStoreRuntimeResource(participant.getObjectName());
             final ModelNode model = resource.getModel();
             Map<String, String> pAttributes = getMBeanValues(mbs,  participant.getObjectName(),
-                    LogStoreConstants.PARTICIPANT_JMX_NAMES);
-            String pAddress = pAttributes.get(JNDI_PROPNAME);
+                    resolver.getParticipantJmxNames());
+            String pAddress = pAttributes.get(resolver.getParticipantJMXPropertyForAddress());
 
             if (pAddress == null || pAddress.length() == 0) {
-                pAttributes.put(JNDI_PROPNAME, String.valueOf(i++));
-                pAddress = pAttributes.get(JNDI_PROPNAME);
+                pAttributes.put(resolver.getParticipantJMXPropertyForAddress(), String.valueOf(i++));
+                pAddress = pAttributes.get(resolver.getParticipantJMXPropertyForAddress());
             }
 
-            addAttributes(model, LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES, pAttributes);
-            // model.get(LogStoreConstants.JMX_ON_ATTRIBUTE).set(participant.getObjectName().getCanonicalName());
+            addAttributes(model, resolver.getParticipantJmxMapper(), pAttributes);
 
             final PathElement element = PathElement.pathElement(LogStoreConstants.PARTICIPANTS, pAddress);
             parent.registerChild(element, resource);
         }
     }
 
-    private void addTransactions(final Resource parent, Set<ObjectInstance> transactions, MBeanServer mbs)
+    private void addObjectStoreRecords(final Resource parent, Set<ObjectInstance> jmxLogRecords, MBeanServer mbs)
             throws IntrospectionException, InstanceNotFoundException, IOException,
             ReflectionException, MalformedObjectNameException {
 
-        for (ObjectInstance oi : transactions) {
-            String transactionId = oi.getObjectName().getCanonicalName();
+        for (ObjectInstance oi : jmxLogRecords) {
+            String jmxCanonicalName = oi.getObjectName().getCanonicalName();
 
-            if (!transactionId.contains("puid") && transactionId.contains("itype")) {
-                final Resource transaction = new LogStoreResource.LogStoreRuntimeResource(oi.getObjectName());
-                final ModelNode model = transaction.getModel();
+            if (!jmxCanonicalName.contains("puid") && jmxCanonicalName.contains("itype")) {
+                final Resource logStoreRecord = new LogStoreResource.LogStoreRuntimeResource(oi.getObjectName());
+                final ModelNode model = logStoreRecord.getModel();
 
-                Map<String, String> tAttributes = getMBeanValues(
-                        mbs,  oi.getObjectName(), LogStoreConstants.TXN_JMX_NAMES);
-                String txnId = tAttributes.get("Id");
+                JmxDataResolver resolver = new JmxDataResolver(jmxCanonicalName);
 
-                addAttributes(model, LogStoreConstants.MODEL_TO_JMX_TXN_NAMES, tAttributes);
-                // model.get(LogStoreConstants.JMX_ON_ATTRIBUTE).set(transactionId);
+                Map<String, String> recordAttributes = getMBeanValues(
+                        mbs,  oi.getObjectName(), resolver.getJmxNames());
+                String logRecordId = recordAttributes.get(resolver.getJMXPropertyForAddress());
+                addAttributes(model, resolver.getJmxMapper(), recordAttributes);
 
-                String participantQuery =  transactionId + ",puid=*";
+                String participantQuery =  jmxCanonicalName + ",puid=*";
                 Set<ObjectInstance> participants = mbs.queryMBeans(new ObjectName(participantQuery), null);
+                addParticipants(resolver, logStoreRecord, participants, mbs);
 
-                addParticipants(transaction, participants, mbs);
-
-                final PathElement element = PathElement.pathElement(LogStoreConstants.TRANSACTIONS, txnId);
-                parent.registerChild(element, transaction);
+                final PathElement element = PathElement.pathElement(resolver.getRootPath(), logRecordId);
+                parent.registerChild(element, logStoreRecord);
             }
         }
     }
 
-    private Resource probeTransactions(MBeanServer mbs, boolean exposeAllLogs)
+    private Resource probeObjectStoreRecords(MBeanServer mbs, boolean exposeAllLogs)
             throws OperationFailedException {
         try {
-            ObjectName on = new ObjectName(osMBeanName);
+            ObjectName on = new ObjectName(ObjStoreBrowserService.OBJ_STORE_BROWSER_BEAN_NAME);
 
-            mbs.setAttribute(on, new javax.management.Attribute("ExposeAllRecordsAsMBeans", Boolean.valueOf(exposeAllLogs)));
+            mbs.setAttribute(on, new javax.management.Attribute("ExposeAllRecordsAsMBeans", exposeAllLogs));
             mbs.invoke(on, "probe", null, null);
 
-            Set<ObjectInstance> transactions = mbs.queryMBeans(new ObjectName(osMBeanName +  ",*"), null);
+            Set<ObjectInstance> objBrowserRecords = mbs.queryMBeans(new ObjectName(ObjStoreBrowserService.OBJ_STORE_BROWSER_BEAN_NAME +  ",*"), null);
 
             final Resource resource = Resource.Factory.create();
-            addTransactions(resource, transactions, mbs);
+            addObjectStoreRecords(resource, objBrowserRecords, mbs);
             return resource;
 
-        } catch (JMException e) {
-            throw new OperationFailedException("Transaction discovery error: ", e);
-        } catch (IOException e) {
-            throw new OperationFailedException("Transaction discovery error: ", e);
+        } catch (JMException | IOException e) {
+            throw TransactionLogger.ROOT_LOGGER.transactionDiscoveryError(e);
         }
     }
 
@@ -183,7 +178,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             // Get the expose-all-logs parameter value
             final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
             final boolean exposeAllLogs = LogStoreConstants.EXPOSE_ALL_LOGS.resolveModelAttribute(context, subModel).asBoolean();
-            final Resource storeModel = probeTransactions(mbs, exposeAllLogs);
+            final Resource storeModel = probeObjectStoreRecords(mbs, exposeAllLogs);
             // Replace the current model with an updated one
             context.acquireControllerLock();
             // WFLY-3020 -- don't drop the root model
@@ -191,6 +186,43 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             logStore.update(storeModel);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    /**
+     * Mapping class that resolves the runtime log-store content data.
+     * In current time we have following types to be listed via cli operations
+     * <ul>
+     *     <li>JTA/JTS transactions: <code>/subsystems=transactions/log-store=log-store/transactions=uid/participants=id</code></li>
+     *     <li>LRA records: <code>/subsystems=transactions/log-store=log-store/lras=uid/participants=id</code></li>
+     * </ul>
+     */
+    private static class JmxDataResolver {
+        private final boolean isLRA;
+
+        JmxDataResolver(String canonicalName) {
+            isLRA = LogStoreLRAConstants.isLRAType(canonicalName);
+        }
+        String getJMXPropertyForAddress() {
+            return LogStoreConstants.ID_JMX_PROPERTY_NAME;
+        }
+        String getParticipantJMXPropertyForAddress() {
+            return isLRA ? LogStoreConstants.ID_JMX_PROPERTY_NAME : LogStoreConstants.JNDI_JXM_PROPERTY_NAME;
+        }
+        String[] getJmxNames() {
+            return isLRA ? LogStoreLRAConstants.LRA_JMX_NAMES : LogStoreConstants.TXN_JMX_NAMES;
+        }
+        Map<String,String> getJmxMapper() {
+            return isLRA ? LogStoreLRAConstants.MODEL_TO_JMX_LRA_NAMES : LogStoreConstants.MODEL_TO_JMX_TXN_NAMES;
+        }
+        String[] getParticipantJmxNames() {
+            return isLRA ? LogStoreLRAConstants.LRA_PARTICIPANT_JMX_NAMES : LogStoreConstants.PARTICIPANT_JMX_NAMES;
+        }
+        Map<String,String> getParticipantJmxMapper() {
+            return isLRA ? LogStoreLRAConstants.MODEL_TO_JMX_LRA_PARTICIPANT_NAMES : LogStoreConstants.MODEL_TO_JMX_PARTICIPANT_NAMES;
+        }
+        String getRootPath() {
+            return isLRA ? LogStoreLRAConstants.LRAS : LogStoreConstants.TRANSACTIONS;
+        }
     }
 
 }

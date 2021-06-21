@@ -405,6 +405,8 @@
         <version.org.eclipse.microprofile.reactive-messaging.api>2.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>2.0</version.org.eclipse.microprofile.rest.client.api>
+        <version.org.eclipse.microprofile.lra.api>1.0</version.org.eclipse.microprofile.lra.api>
+        <version.org.eclipse.microprofile.lra.tck>${version.org.eclipse.microprofile.lra.api}</version.org.eclipse.microprofile.lra.tck>
         <version.org.eclipse.yasson>1.0.9</version.org.eclipse.yasson>
         <version.org.eclipselink.version>2.7.3</version.org.eclipselink.version>
         <version.org.glassfish.jakarta.el>3.0.3.jbossorg-4</version.org.glassfish.jakarta.el>
@@ -6629,6 +6631,41 @@
                 <artifactId>weld-se-core</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.lra</groupId>
+                <artifactId>microprofile-lra-api</artifactId>
+                <version>${version.org.eclipse.microprofile.lra.api}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.lra</groupId>
+                <artifactId>microprofile-lra-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.lra.tck}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>narayana-lra</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-coordinator-jar</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-service-base</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-client</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-proxy-api</artifactId>
+                <version>${version.org.jboss.narayana}</version>
             </dependency>
 
             <!-- EL3 RI implementation -->

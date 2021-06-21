@@ -29,17 +29,21 @@ import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.OBJ_STORE_BROWSER_CAPABILITY;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -77,6 +81,7 @@ import org.jboss.as.txn.service.CoreEnvironmentService;
 import org.jboss.as.txn.service.ExtendedJBossXATerminatorService;
 import org.jboss.as.txn.service.JTAEnvironmentBeanService;
 import org.jboss.as.txn.service.LocalTransactionContextService;
+import org.jboss.as.txn.service.ObjStoreBrowserService;
 import org.jboss.as.txn.service.RemotingTransactionServiceService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionRemoteHTTPService;
@@ -88,12 +93,14 @@ import org.jboss.as.txn.service.UserTransactionRegistryService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.as.txn.service.XATerminatorService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.tm.ExtendedJBossXATerminator;
@@ -548,6 +555,17 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         transactionManagerServiceServiceBuilder.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
         transactionManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
         transactionManagerServiceServiceBuilder.install();
+
+        final CapabilityServiceBuilder objStoreBrowserBuilder = context.getCapabilityServiceTarget().addCapability(OBJ_STORE_BROWSER_CAPABILITY);
+        final ServiceName objStoreBrowserServiceName = OBJ_STORE_BROWSER_CAPABILITY.getCapabilityServiceName(ObjStoreBrowser.class);
+        objStoreBrowserBuilder.requires(ArjunaTransactionManagerService.SERVICE_NAME);
+        final Consumer<ObjStoreBrowser> objStoreBrowserConsumer
+                = objStoreBrowserBuilder.provides(OBJ_STORE_BROWSER_CAPABILITY, objStoreBrowserServiceName);
+        final ObjStoreBrowserService objStoreBrowserService = new ObjStoreBrowserService(objStoreBrowserConsumer, jts);
+        objStoreBrowserBuilder
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .setInstance(objStoreBrowserService)
+                .install();
     }
 
     private void checkIfNodeIdentifierIsDefault(final OperationContext context, final ModelNode model) throws OperationFailedException {

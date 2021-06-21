@@ -25,7 +25,6 @@ package org.jboss.as.txn.service;
 import com.arjuna.ats.arjuna.common.CoordinatorEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.coordinator.TxControl;
-import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
 import org.jboss.as.txn.logging.TransactionLogger;
@@ -44,8 +43,6 @@ import org.omg.CORBA.ORB;
 import org.wildfly.transaction.client.LocalUserTransaction;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A service for the proprietary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
@@ -65,7 +62,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
 
 
     private com.arjuna.ats.jbossatx.jta.TransactionManagerService value;
-    private ObjStoreBrowser objStoreBrowser;
 
     private boolean transactionStatusManagerEnable;
     private boolean coordinatorEnableStatistics;
@@ -89,15 +85,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         coordinatorEnvironmentBean.setTransactionStatusManagerEnable(transactionStatusManagerEnable);
 
         TxControl.setDefaultTimeout(coordinatorDefaultTimeout);
-
-        // Object Store Browser bean
-        Map<String, String> objStoreBrowserTypes = new HashMap<String, String>();
-        objStoreBrowser = new ObjStoreBrowser();
-        objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
-                "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.JTAActionBean");
-        objStoreBrowserTypes.put("StateManager/AbstractRecord/ConnectableResourceRecord",
-                "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.ConnectableResourceRecordBean");
-
 
         if (!jts) {
             // No IIOP, stick with Jakarta Transactions mode.
@@ -137,9 +124,6 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
                 throw new NoSuchFieldError(e.getMessage());
             }
 
-            objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/ArjunaTransactionImple",
-                    "com.arjuna.ats.arjuna.tools.osb.mbean.ActionBean");
-
             try {
                 service.create();
             } catch (Exception e) {
@@ -152,20 +136,12 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             }
             value = service;
         }
-
-        try {
-            objStoreBrowser.start();
-        } catch (Exception e) {
-            throw TransactionLogger.ROOT_LOGGER.objectStoreStartFailure(e);
-        }
-
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         value.stop();
         value.destroy();
-        objStoreBrowser.stop();
         value = null;
     }
 

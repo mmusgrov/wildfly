@@ -89,9 +89,11 @@ interface CommonAttributes {
     String AVERAGE_COMMIT_TIME = "average-commit-time";
 
 
-    String PARTICIPANT = "participant";
     String TRANSACTION = "transaction";
+    String PARTICIPANT = "participant";
     // TODO, process-id/mbean, process-id/file
+
+    String LRA = "lra";
 
     String CM_RESOURCES ="commit-markable-resources";
     String CM_RESOURCE ="commit-markable-resource";

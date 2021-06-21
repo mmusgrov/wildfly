@@ -67,7 +67,7 @@ public class TransactionExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
     static final PathElement PARTICIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
     static final PathElement TRANSACTION_PATH = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
-
+    static final PathElement LRA_PATH = PathElement.pathElement(LogStoreLRAConstants.LRAS);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -112,8 +112,12 @@ public class TransactionExtension implements Extension {
 
         ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource, registerRuntimeOnly));
         if (registerRuntimeOnly) {
+            // jta transactions
             ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(new LogStoreTransactionDefinition(resource));
             transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
+            // lra
+            ManagementResourceRegistration lraChild = logStoreChild.registerSubModel(new LogStoreLRADefinition(resource));
+            lraChild.registerSubModel(LogStoreLRAParticipantDefinition.INSTANCE);
         }
 
         subsystem.registerXMLElementWriter(TransactionSubsystemXMLPersister.INSTANCE);

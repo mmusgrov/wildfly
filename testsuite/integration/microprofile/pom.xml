@@ -46,6 +46,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
+        <lra.coordinator.url>http://localhost:8080/lra-coordinator/lra-coordinator</lra.coordinator.url>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
@@ -87,6 +88,22 @@
             <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
             <artifactId>microprofile-reactive-streams-operators-api</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.lra</groupId>
+            <artifactId>microprofile-lra-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>2.30</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.26</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
@@ -259,6 +276,7 @@
                     <system-properties>
                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
                         <module.path>${jboss.dist}/modules</module.path>
+                        <lra.coordinator.url>${lra.coordinator.url}</lra.coordinator.url>
                     </system-properties>
                 </configuration>
                 <executions>
@@ -312,6 +330,9 @@
                                 <!-- Dependencies for reactive specs -->
                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                 <layer>h2-default-datasource</layer>
+                                <!--Dependencies for lra specs-->
+                                <layer>microprofile-lra-coordinator</layer>
+                                <layer>microprofile-lra-participant</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -358,6 +379,7 @@
                         <configuration>
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                <lra.coordinator.url>${lra.coordinator.url}</lra.coordinator.url>
                             </systemPropertyVariables>
                             <excludes>
                                 <!-- The enable-microprofile.cli script does not enable the reactive extensions/subsystems -->
@@ -453,6 +475,9 @@
                                                 <!-- Dependencies for reactive specs -->
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <!--Dependencies for lra specs-->
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -575,6 +600,9 @@
                                                 <!-- Dependencies for reactive specs -->
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <!--Dependencies for lra specs-->
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                             </layers>
                                         </config>
                                     </configurations>

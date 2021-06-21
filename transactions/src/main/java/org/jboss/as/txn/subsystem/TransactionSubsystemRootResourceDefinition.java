@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -58,6 +59,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.txn.logging.TransactionLogger;
+import org.jboss.as.txn.service.ObjStoreBrowserService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.tm.XAResourceRecoveryRegistry;
@@ -95,6 +97,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     static final RuntimeCapability<Void> XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.xa-resource-recovery-registry", XAResourceRecoveryRegistry.class)
+                    .build();
+
+    /** Capability to work with transaction object store tooling **/
+    public static final RuntimeCapability<Void> OBJ_STORE_BROWSER_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.transactions.obj-store-browser", ObjStoreBrowser.class)
                     .build();
 
     //recovery environment
@@ -298,7 +305,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                 .setRemoveHandler(TransactionSubsystemRemove.INSTANCE)
                 .setCapabilities(TRANSACTION_CAPABILITY, LOCAL_PROVIDER_CAPABILITY,
                         TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY,
-                        XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY)
+                        XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY,
+                        OBJ_STORE_BROWSER_CAPABILITY)
                 // Configuring these is not required as these are defaulted based on our add/remove handler types
                 //OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES
         );
