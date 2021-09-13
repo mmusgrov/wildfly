@@ -44,8 +44,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.jaxrs.JaxrsExtension;
-import org.jboss.as.jaxrs.deployment.JaxrsScanningProcessor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -119,13 +117,14 @@ public class MicroProfileLRAParticipantSubsystemDefinition  extends PersistentRe
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
 
-                    // org.jboss.as.server.deployment.Phase.java, it defines the order within the phase (https://issues.redhat.com/browse/WFCORE-5559)
+                    // org.jboss.as.server.deployment.Phase, it defines the order within the phase (https://issues.redhat.com/browse/WFCORE-5559)
                     final int STRUCTURE_MICROPROFILE_LRA_PARTICIPANT = 0x2400;
                     final int DEPENDENCIES_MICROPROFILE_LRA_PARTICIPANT = 0x18D0;
+                    final int POST_MODULE_MICROPROFILE_LRA_PARTICIPANT = 0x1A01;
 
                     processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, STRUCTURE, STRUCTURE_MICROPROFILE_LRA_PARTICIPANT, new LRAParticipantDeploymentSetupProcessor());
                     processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROPROFILE_LRA_PARTICIPANT, new LRAParticipantDeploymentDependencyProcessor());
-                    processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_SCANNING, new LRAJaxrsScanningProcessor());
+                    processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, Phase.POST_MODULE, POST_MODULE_MICROPROFILE_LRA_PARTICIPANT, new LRAJaxrsScanningProcessor());
                 }
             }, RUNTIME);
 

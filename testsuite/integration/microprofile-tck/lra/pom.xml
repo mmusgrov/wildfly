@@ -62,6 +62,7 @@
         <connect.to.server>true</connect.to.server>
         <wait.for.ports>9990</wait.for.ports>
         <port.waiting.timeout>10</port.waiting.timeout>
+        <debug.server.args></debug.server.args>
     </properties>
 
     <dependencies>
@@ -187,7 +188,7 @@
                     </includes>
                     <systemPropertyVariables>
                         <lra.tck.timeout.factor>${lra.tck.timeout.factor}</lra.tck.timeout.factor>
-                        <microprofile.jvm.args>${microprofile.jvm.args} ${surefire.jpda.args}</microprofile.jvm.args>
+                        <microprofile.jvm.args>${microprofile.jvm.args} ${surefire.jpda.args} ${debug.server.args}</microprofile.jvm.args>
                         <!-- Override the standard module path that points at the shared module set from servlet-dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
                         <lra.coordinator.url>${lra.coordinator.url}</lra.coordinator.url>
@@ -205,4 +206,17 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>debug.server</id>
+            <activation>
+                <property>
+                    <name>debug.server</name>
+                </property>
+            </activation>
+            <properties>
+                <debug.server.args>-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</debug.server.args>
+            </properties>
+        </profile>
+    </profiles>
 </project>

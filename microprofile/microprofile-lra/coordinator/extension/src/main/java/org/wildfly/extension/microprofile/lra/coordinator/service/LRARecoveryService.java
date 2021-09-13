@@ -25,7 +25,6 @@ package org.wildfly.extension.microprofile.lra.coordinator.service;
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import io.narayana.lra.coordinator.internal.Implementations;
 import io.narayana.lra.coordinator.internal.LRARecoveryModule;
-import org.jboss.logging.Logger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

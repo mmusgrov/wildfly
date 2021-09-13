@@ -35,7 +35,6 @@
                 -Dlra.http.recovery.path=${lra.http.recovery.path}
                 -Dlra.tck.timeout.factor=${lra.tck.timeout.factor}
                 -DRecoveryEnvironmentBean.periodicRecoveryPeriod=1
-                -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787
             </property>
             <property name="serverConfig">standalone-microprofile.xml</property>
             <property name="managementAddress">${management.address}</property>
