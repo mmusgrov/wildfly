@@ -31,7 +31,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>25.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-lra</artifactId>
@@ -43,7 +43,6 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <ts.elytron.cli>${jbossas.ts.dir}/shared/enable-elytron.cli</ts.elytron.cli>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
         <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
@@ -80,6 +79,32 @@
             <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>lra-test-arquillian-extension</artifactId>
             <version>${version.org.jboss.narayana}</version>
+            <scope>test</scope>
+        </dependency>
+       <!-- Jakarta RESTful Web Services Client implementation -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-core-spi</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

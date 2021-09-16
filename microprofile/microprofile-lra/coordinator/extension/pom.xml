@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-microprofile-lra-coordinator-parent</artifactId>
-        <version>25.0.0.Beta1-SNAPSHOT</version>
+        <version>25.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
+            <artifactId>resteasy-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>

@@ -48,5 +48,6 @@
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider" services="export"/>
         <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="export"/>
+        <!-- <module name="org.jboss.resteasy.resteasy-core" services="import"/> -->
     </dependencies>
 </module>
