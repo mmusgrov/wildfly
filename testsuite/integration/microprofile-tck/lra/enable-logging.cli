@@ -1,0 +1,5 @@
+embed-server --server-config=standalone-microprofile.xml
+
+/subsystem=logging/logger=io.narayana:add(level=TRACE)
+
+stop-embedded-server

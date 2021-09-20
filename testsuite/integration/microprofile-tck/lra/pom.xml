@@ -62,6 +62,7 @@
         <wait.for.ports>9990</wait.for.ports>
         <port.waiting.timeout>10</port.waiting.timeout>
         <debug.server.args></debug.server.args>
+        <ts.debugging.cli></ts.debugging.cli>
     </properties>
 
     <dependencies>
@@ -232,6 +233,44 @@
         </plugins>
     </build>
     <profiles>
+        <profile>
+            <id>ts.trace</id>
+            <activation>
+                <property>
+                    <name>ts.trace</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>enable-logging.cli</script>
+                            </scripts>
+                            <jboss-home>${project.build.directory}/wildfly</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>debug.server</id>
             <activation>
